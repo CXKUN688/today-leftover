@@ -173,14 +173,39 @@ Android Emulator usage: emulator [options] [-qemu args]
 补充：该二进制**不支持 `--version`**（会报 `unknown option: --version`），
 因此用 `--version` 探测会误判为「损坏」。
 
-**真实原因二（决定性）：x86_64 客户机在无硬件加速时无法执行。**
+**真实原因二（决定性）：模拟器明确拒绝在无硬件加速下运行 x86_64。**
 
-修正 PATH 后，模拟器**前端与 QEMU 后端都能正常启动**：
+以默认（自动）加速模式启动时，模拟器直接报错退出，这是官方给出的确定性结论：
 
 ```
-$ adb devices
-emulator-5554   offline
+DEBUG | CPU Acceleration: DISABLED
+DEBUG | CPU Acceleration status: Android Emulator hypervisor driver is not installed on this machine
+DEBUG | handleCpuAcceleration: feature check for hvf
+ERROR | x86_64 emulation currently requires hardware acceleration!
+More info: https://developer.android.com/studio/run/emulator-acceleration#vm-windows
 ```
+
+补充观察：修正 PATH 并强制 `-accel off` 时，前端与 QEMU 后端**能够启动**，
+`adb devices` 会显示 `emulator-5554 offline`，但客户机**一条指令都不执行**：
+
+```
+> 观察 20 秒内 qemu-system-x86_64-headless 的 CPU 时间
+cpu before=0.375s after=0.375s delta=0s      ← 完全冻结，非「慢」
+```
+
+即 `-accel off` 只是绕过了前端的拒绝检查，被拉起的客户机仍然无法真正引导。
+
+**硬件本身完全支持虚拟化，缺的是操作系统层面的启用：**
+
+| 检查项 | 结果 |
+| --- | --- |
+| `HyperVRequirementVirtualizationFirmwareEnabled` | ✅ True |
+| `HyperVRequirementVMMonitorModeExtensions` | ✅ True |
+| `HyperVRequirementSecondLevelAddressTranslation` | ✅ True |
+| `HyperVRequirementDataExecutionPreventionAvailable` | ✅ True |
+| **`HypervisorPresent` / `CsHypervisorPresent`** | ❌ **False** |
+
+也就是说：**CPU 具备虚拟化能力，但宿主未启用虚拟机监控程序**。
 
 进程存活、控制台端口 5554/5555 正常监听，但客户机**一条指令都没有执行**：
 

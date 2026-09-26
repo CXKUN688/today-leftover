@@ -79,15 +79,28 @@ cd D:\CodexTasks\daily-budget-android-dev
 
 ### 4.3 设备测试（需要真机或模拟器）
 
-```powershell
-.\gradlew.bat :app:connectedDebugAndroidTest
-```
-
 仅编译设备测试、不执行：
 
 ```powershell
 .\gradlew.bat :app:assembleDebugAndroidTest
 ```
+
+### 4.4 一键设备验证脚本
+
+连接真机后，推荐使用 `scripts\verify-device.ps1`，
+它会自动完成设备信息记录、安装、启动冒烟测试、设备测试与日志收集，
+并把证据写入 `evidence\` 目录：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File D:\CodexTasks\daily-budget-android-dev\scripts\verify-device.ps1
+```
+
+可选参数：`-SkipTests`（跳过设备测试）、`-SkipInstall`（跳过安装）。
+
+未检测到设备时，脚本会给出排查提示并以非零码退出，不会静默失败。
+
+> 注意：该脚本含中文输出，文件必须保存为 **UTF-8 with BOM**，
+> 否则 Windows PowerShell 5.1 会按 ANSI 解析导致乱码与语法错误。
 
 ## 5. 构建产物
 
@@ -97,6 +110,7 @@ cd D:\CodexTasks\daily-budget-android-dev
 | 设备测试 APK | `app\build\outputs\apk\androidTest\debug\app-debug-androidTest.apk` |
 | Lint 文本报告 | `app\build\reports\lint-results-debug.txt` |
 | 单元测试报告 | `core\build\test-results\test\*.xml` |
+| 设备验证证据 | `evidence\`（由 `verify-device.ps1` 生成，不纳入版本控制） |
 
 ## 6. 模块结构
 

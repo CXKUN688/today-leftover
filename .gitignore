@@ -1,0 +1,7 @@
+.gradle/
+**/build/
+local.properties
+.superpowers/
+*.jks
+*.keystore
+scripts/*.py

@@ -27,7 +27,7 @@
 | Compose UI 测试 | ⚠️ **API 37 上跳过** | Espresso 上游限制，见 §3.3 |
 | 真实微信/支付宝通知记账 | ❌ **未验证** | 需真实付款通知 |
 | 真实平台账单导入 | ❌ **未验证** | 仅合成样本通过 |
-| 手动全流程点击验证 | ⚠️ **部分受限** | 注入点击在 MIUI 上未生效，见 §6 |
+| 手动全流程点击验证 | ⚠️ **部分受限** | adb shell 缺 INJECT_EVENTS，无法注入点击，见 §6 |
 
 ---
 
@@ -250,16 +250,27 @@ CPU acceleration status: Android Emulator hypervisor driver is not installed on 
 
 账单页亦正确渲染，并如实显示「**模板待真机验证，识别结果需你确认**」的提示。
 
-### 6.2 受限部分
+### 6.2 受限部分：无法注入点击（INJECT_EVENTS 缺失）
 
-**注入点击（`adb shell input tap`）在 MIUI 上未生效**，
+**注入点击（`adb shell input tap`）在本设备上不可用**，
 因此无法通过脚本完成「点按钮 → 输金额 → 保存」的完整手工流程。
 
-排查：屏幕处于 `Awake` 且未锁屏；`uiautomator` 可正常导出层级；
-但注入点击后界面无变化，多次更换坐标（含导航栏）均无效。
+已定位到确切原因——`input motionevent` 直接抛出：
 
-> 推测与 MIUI 的安全策略有关。设备上另有一个非系统无障碍服务
-> `com.lptiyu.tanke`，也可能影响注入事件，**建议你留意该应用**。
+```
+java.lang.SecurityException: Injecting input events requires the caller
+(or the source of the instrumentation, if any) to have the INJECT_EVENTS permission.
+  at android.hardware.input.InputManagerGlobal.injectInputEvent(...)
+  at com.android.server.input.InputShellCommand.injectInputEvent(...)
+```
+
+即 **Android 17 的 adb shell 不具备 `INJECT_EVENTS` 权限**，
+无法注入合成输入事件。`input tap` 因此静默无效（不报错但界面无变化），
+`input motionevent` 则明确抛异常。
+
+> 说明：这不是 MIUI 的安全限制，也不是设备上第三方无障碍服务所致，
+> 而是系统级的权限约束，**无法在当前环境下绕过**。
+> （此前曾推测与 MIUI 或设备上的 `com.lptiyu.tanke` 服务有关，实测不成立，特此更正。）
 
 **因此以下流程仍未经手动确认**，需要你在手机上实际操作：
 

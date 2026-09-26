@@ -166,10 +166,36 @@ WARNING | x86_64 emulation may not work without hardware acceleration!
 `extras/` 下**没有**驱动安装包，`HvHost` 服务为 `Stopped`，
 且当前用户**无管理员权限**（`IsAdmin=False`），无法安装内核态驱动。
 
-**结论：需要管理员权限安装 AEHD/WHPX，或改用物理设备完成验证。**
-详见 `docs/VERIFICATION.md` 第 4 节（含排查过程与已推翻的错误结论）。
+**结论：需要管理员权限安装 AEHD/WHPX 才能用模拟器。**
 
-### 7.2 adb 需要正确的用户目录
+> **验证已改用物理设备完成。** 真机（小米 15 / Android 17）验证结果见
+> `docs/VERIFICATION.md`，设备测试 9 tests / 0 failures / 4 skipped。
+> 按原计划，真机结果本就优先于且不可由模拟器替代，因此模拟器不可用不构成交付阻塞。
+
+详见 `docs/VERIFICATION.md` 第 5 节（含排查过程与已推翻的错误结论）。
+
+### 7.2 真机验证步骤（推荐路径）
+
+```powershell
+# 1. 确认设备已授权
+D:\CodexTasks\android-toolchain\android-sdk\platform-tools\adb.exe devices -l
+
+# 2. 一键验证（推荐）
+powershell -ExecutionPolicy Bypass -File scripts\verify-device.ps1
+```
+
+小米（HyperOS）需特别注意：
+
+- 开发者选项中「USB 调试」**和**「USB 调试（安全设置）」都要开启
+- 「USB 调试（安全设置）」用于允许通过 USB 调试模拟点击，Compose UI 测试依赖它
+- 若 adb 看不到设备，检查手机是否暴露了 `ADB Interface`
+  （仅 MTP/`WPD` 类说明 ADB 未开启）：
+
+  ```powershell
+  Get-PnpDevice -PresentOnly | Where-Object { $_.InstanceId -like '*VID_2717*' }
+  ```
+
+### 7.3 adb 需要正确的用户目录
 
 模拟器/adb 默认写入 `C:\Users\<用户>\.android`。
 如需指向 D 盘用户目录，设置：

@@ -1,0 +1,51 @@
+今日余粮 (Daily Budget) — 交付构建信息
+========================================
+
+产物文件      : 今日余粮-debug.apk
+文件大小      : 59032017 字节 (约 56.3 MiB)
+SHA-256       : 9728f6ee6ea2911752d6635b695848a3772beb851884dae4a6dd513f863b9c12
+
+应用信息
+--------
+应用名称      : 今日余粮
+包名          : com.jinyuyuliang.budget
+版本名        : 0.1.0
+版本号        : 1
+minSdkVersion : 28  (Android 9.0)
+targetSdkVersion : 36 (Android 16)
+compileSdk    : 36
+构建类型      : debug（已签名）
+
+工具链版本
+----------
+JDK           : 17.0.20.1+1 (D:\CodexTasks\android-toolchain\jdk\jdk-17.0.20.1+1)
+Gradle        : 8.13
+Android SDK   : D:\CodexTasks\android-toolchain\android-sdk
+Build-Tools   : 35.0.0
+Platform      : android-36
+Android Emulator : 37.1.11.0
+
+签名说明
+--------
+本 APK 使用 Android 调试密钥（debug keystore）签名，仅供个人试用与内部测试。
+它不是应用商店正式发布包，请勿上传至任何应用商店。
+调试密钥位于用户目录 ~/.android/debug.keystore，未纳入版本控制。
+如需后续同签名覆盖升级，请保留该调试密钥；若密钥丢失，需先卸载旧版本才能安装新版本。
+
+校验方法
+--------
+Windows PowerShell:
+  Get-FileHash .\今日余粮-debug.apk -Algorithm SHA256
+
+Linux / macOS:
+  sha256sum 今日余粮-debug.apk
+
+安装方法
+--------
+1. 在手机「设置 → 关于手机」中连续点击版本号，开启开发者选项。
+2. 在「开发者选项」中开启「USB 调试」。
+3. 用数据线连接电脑，在手机上确认「允许 USB 调试」。
+4. 执行：
+   D:\CodexTasks\android-toolchain\android-sdk\platform-tools\adb.exe install -r 今日余粮-debug.apk
+
+也可直接将 APK 文件传输到手机后点击安装（需允许「安装未知来源应用」）。

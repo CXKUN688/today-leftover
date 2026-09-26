@@ -55,7 +55,11 @@ powershell -ExecutionPolicy Bypass -File D:\CodexTasks\daily-budget-android-dev\
 ```
 
 脚本会自动设置 `JAVA_HOME`、`GRADLE_USER_HOME`、`ANDROID_HOME`，
-然后执行 `:core:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug`。
+然后执行 `:core:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest`。
+
+> `:app:assembleDebugAndroidTest` 用于编译设备测试 APK。
+> 它**不需要**连接设备，但能捕获设备测试代码的编译错误——
+> 曾有一处导入冲突使设备测试长期无法编译却未被发现（见 `docs/VERIFICATION.md` §3.1）。
 
 加上 `-DeviceTests` 会追加 `:app:connectedDebugAndroidTest`（需要已连接的设备）：
 
@@ -70,7 +74,19 @@ $env:JAVA_HOME='D:\CodexTasks\android-toolchain\jdk\jdk-17.0.20.1+1'
 $env:GRADLE_USER_HOME='D:\CodexTasks\android-toolchain\gradle-cache'
 $env:ANDROID_HOME='D:\CodexTasks\android-toolchain\android-sdk'
 cd D:\CodexTasks\daily-budget-android-dev
-.\gradlew.bat :core:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
+.\gradlew.bat :core:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest
+```
+
+### 4.3 设备测试（需要真机或模拟器）
+
+```powershell
+.\gradlew.bat :app:connectedDebugAndroidTest
+```
+
+仅编译设备测试、不执行：
+
+```powershell
+.\gradlew.bat :app:assembleDebugAndroidTest
 ```
 
 ## 5. 构建产物
@@ -78,6 +94,7 @@ cd D:\CodexTasks\daily-budget-android-dev
 | 产物 | 路径 |
 | --- | --- |
 | Debug APK | `app\build\outputs\apk\debug\app-debug.apk` |
+| 设备测试 APK | `app\build\outputs\apk\androidTest\debug\app-debug-androidTest.apk` |
 | Lint 文本报告 | `app\build\reports\lint-results-debug.txt` |
 | 单元测试报告 | `core\build\test-results\test\*.xml` |
 

@@ -4,8 +4,11 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import com.jinyuyuliang.budget.data.BudgetStore
 import kotlinx.coroutines.*
-import org.junit.*
+import org.junit.After
 import org.junit.Assert.*
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
 import org.junit.runner.RunWith
 import java.time.LocalDate
 import java.io.ByteArrayOutputStream

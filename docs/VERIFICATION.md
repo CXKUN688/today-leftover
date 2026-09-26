@@ -17,7 +17,8 @@
 | app 单元测试 | ⚠️ 无测试源（NO-SOURCE） | — |
 | Android Lint | ✅ 通过 | 0 errors, 12 warnings |
 | assembleDebug 构建 | ✅ 通过 | APK 已产出 |
-| 模拟器启动 | ❌ **失败（环境阻塞）** | 见 §4 |
+| **设备测试 APK 编译** | ✅ **通过** | `assembleDebugAndroidTest` 成功（修复了一处编译错误，见 §3.1） |
+| 模拟器启动 | ❌ **失败（环境阻塞）** | 客户机无法执行，见 §4 |
 | `connectedDebugAndroidTest` | ❌ **未执行** | 无可用设备 |
 | 模拟器全流程手动操作 | ❌ **未执行** | 无可用设备 |
 | 真机安装与启动 | ❌ **未执行** | 无设备连接 |
@@ -90,6 +91,47 @@ BUILD SUCCESSFUL in 3s
 | `xlsxParsesOnAndroid` | XLSX 解析在 Android 运行时可用（含 JAXP DOM 在 Android 上的兼容性） |
 
 **这些测试尚未运行过。** 它们需要一台可用的 Android 设备或模拟器。
+
+### 3.1 已修复：设备测试此前无法编译（真实缺陷）
+
+本轮通过编译设备测试发现，`BudgetDeviceTest.kt` **此前根本无法编译**，
+即这些测试在修复前**即使在有设备的环境下也跑不起来**。
+
+**错误**：
+
+```
+> .\gradlew.bat :app:assembleDebugAndroidTest
+e: BudgetDeviceTest.kt:16:7 Illegal annotation class 'Rule'.
+FAILURE: Execution failed for task ':app:compileDebugAndroidTestKotlin'.
+```
+
+**原因**：文件中使用了通配符导入 `import org.junit.*`。
+Kotlin 会把 `@get:Rule` 中的 `Rule` 解析为类 `org.junit.Rule`，
+而它需要的是注解 `org.junit.Rule`，二者冲突导致注解解析失败。
+
+**修复**：将该行通配符导入替换为显式导入：
+
+```kotlin
+import org.junit.After
+import org.junit.Assert.*
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+```
+
+**修复后验证**：
+
+```
+> .\gradlew.bat :app:assembleDebugAndroidTest
+BUILD SUCCESSFUL in 2s
+48 actionable tasks: 9 executed, 39 up-to-date
+```
+
+产物：`app\build\outputs\apk\androidTest\debug\app-debug-androidTest.apk`（2,372,861 字节）。
+
+> 注意：**编译通过不等于测试通过。** 这 4 个用例的断言结果仍然未知，
+> 仍然需要真实设备执行后才能确认。
 
 ---
 
@@ -213,6 +255,19 @@ Android Emulator hypervisor driver is not installed on this machine
 
 ### 6.1 用物理设备（推荐，无需管理员权限）
 
+**设备连接现状**：截至本轮验证，本机 USB 总线上**没有任何手机类设备**。
+USB 总线本身工作正常（已枚举到摄像头、蓝牙适配器、键盘、鼠标、手柄等），
+`adb` 服务亦运行正常，因此这属于「未接入设备」，**不是**可见性或驱动问题。
+
+确认方法（枚举全部 USB 设备，而非只看 adb）：
+
+```powershell
+Get-PnpDevice -PresentOnly | Where-Object { $_.InstanceId -like 'USB\*' } |
+    Select-Object Status,Class,FriendlyName
+```
+
+操作步骤：
+
 1. 手机开启「开发者选项 → USB 调试」
 2. USB 连接电脑，手机上确认「允许 USB 调试」
 3. 确认设备可见：
@@ -221,7 +276,7 @@ Android Emulator hypervisor driver is not installed on this machine
    D:\CodexTasks\android-toolchain\android-sdk\platform-tools\adb.exe devices -l
    ```
 
-4. 运行设备测试：
+4. 运行设备测试（测试 APK 现已可编译，见 §3.1）：
 
    ```powershell
    powershell -ExecutionPolicy Bypass -File D:\CodexTasks\daily-budget-android-dev\scripts\build.ps1 -DeviceTests
@@ -237,9 +292,11 @@ Android Emulator hypervisor driver is not installed on this machine
 
 需要管理员权限，选择以下之一：
 
-- 安装 AEHD 驱动并重启
+- 下载并安装 AEHD 驱动后重启（本机 `extras/` 下**没有**安装包，需先获取）
 - 启用 WHPX：`DISM /Online /Enable-Feature /FeatureName:HypervisorPlatform /All`
-- 修复 QEMU 后端依赖 DLL
+
+> 注意：即使补齐硬件加速，纯软件模式下能否顺利引导 Android 15 x86_64 仍需实测确认，
+> 且模拟器**无法**替代真实通知记账与小米 15 兼容性验证。
 
 ---
 
@@ -266,5 +323,6 @@ D:\CodexTasks\android-toolchain\android-sdk\build-tools\35.0.0\apksigner.bat ver
 
 ## 8. 一句话总结
 
-**构建与纯逻辑测试已验证通过，APK 已产出且校验值已记录；
+**构建与纯逻辑测试已验证通过（含设备测试 APK 编译，并修复了一处使测试无法编译的缺陷），
+APK 已产出且校验值已记录；
 但所有设备侧验证（模拟器、真机、通知记账、真实账单）均未完成，属明确交付缺口。**

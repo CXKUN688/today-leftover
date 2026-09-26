@@ -6,4 +6,4 @@ if(-not $env:JAVA_HOME){$env:JAVA_HOME=(Get-ChildItem -LiteralPath (Join-Path $t
 $env:GRADLE_USER_HOME=Join-Path $toolRoot 'gradle-cache'
 $env:ANDROID_HOME=Join-Path $toolRoot 'android-sdk'
 Push-Location $projectRoot
-try { & '.\gradlew.bat' :core:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug; if($LASTEXITCODE -ne 0){throw 'Build or verification failed'};if($DeviceTests){ & '.\gradlew.bat' :app:connectedDebugAndroidTest;if($LASTEXITCODE -ne 0){throw 'Device tests failed'}} } finally {Pop-Location}
+try { & '.\gradlew.bat' :core:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest; if($LASTEXITCODE -ne 0){throw 'Build or verification failed'};if($DeviceTests){ & '.\gradlew.bat' :app:connectedDebugAndroidTest;if($LASTEXITCODE -ne 0){throw 'Device tests failed'}} } finally {Pop-Location}

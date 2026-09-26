@@ -1,4 +1,4 @@
-﻿# 今日余粮 — 验证证据与缺口
+# 今日余粮 — 验证证据与缺口
 
 本文如实记录当前交付的验证状态。**明确区分「已验证通过」与「未验证」**，
 未验证项一律不记为通过。
@@ -82,8 +82,8 @@
 
 ```
 > .\gradlew.bat :app:connectedDebugAndroidTest
-Starting 9 tests on 24129PN74C - 17
-Finished 13 tests on 24129PN74C - 17
+Starting 10 tests on 24129PN74C - 17
+Finished 14 tests on 24129PN74C - 17
 BUILD SUCCESSFUL
 ```
 

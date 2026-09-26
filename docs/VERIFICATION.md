@@ -99,53 +99,95 @@ BUILD SUCCESSFUL in 3s
 
 尝试启动 AVD `BudgetTest`（android-35, x86_64）时，模拟器进程在数秒内退出，`adb devices` 始终为空。
 
-### 4.2 根因诊断
+### 4.2 根因诊断（含一次已修正的错误结论）
 
-**原因一：无硬件加速。**
+> **修正说明**：初次诊断曾判断为「QEMU 后端缺少依赖 DLL」，该结论**不成立**，已推翻。
+> 下方记录真实原因，供后续排查参考。
+
+**真实原因一：QEMU 后端需要模拟器目录位于 PATH。**
+
+直接调用 QEMU 后端时，若 PATH 中没有模拟器目录，进程会静默秒退、无任何输出：
+
+```
+> qemu-system-x86_64-headless.exe --version
+→ 无 stdout/stderr，进程立即消失
+```
+
+一旦把模拟器目录加入 PATH，同一个二进制立即正常工作：
+
+```powershell
+$emu='D:\CodexTasks\android-toolchain\android-sdk\emulator'
+$env:PATH="$emu;$emu\lib64;$emu\qemu\windows-x86_64;$env:PATH"
+```
+
+```
+> qemu-system-x86_64-headless.exe -help
+Android Emulator usage: emulator [options] [-qemu args]
+  options:
+    -list-avds    list available AVDs
+    ...
+```
+
+补充：该二进制**不支持 `--version`**（会报 `unknown option: --version`），
+因此用 `--version` 探测会误判为「损坏」。
+
+**真实原因二（决定性）：x86_64 客户机在无硬件加速时无法执行。**
+
+修正 PATH 后，模拟器**前端与 QEMU 后端都能正常启动**：
+
+```
+$ adb devices
+emulator-5554   offline
+```
+
+进程存活、控制台端口 5554/5555 正常监听，但客户机**一条指令都没有执行**：
+
+```
+> 观察 20 秒内 qemu-system-x86_64-headless 的 CPU 时间
+cpu before=0.375s after=0.375s delta=0s      ← 完全冻结，非「慢」
+```
+
+模拟器自身也明确警告：
+
+```
+WARNING | x86_64 emulation may not work without hardware acceleration!
+```
+
+而硬件加速**不可用且无法在当前权限下启用**：
 
 ```
 > emulator.exe -accel-check
-accel:
 6
 Android Emulator hypervisor driver is not installed on this machine
 ```
 
-返回码 6 表示未安装 AEHD（Android Emulator hypervisor driver）。
-机器上也没有启用 Hyper-V / WHPX（`HvHost` 服务处于 `Stopped`，且 `gvm.sys`、`aehd.sys` 均不存在）。
+- `extras/` 目录为空——**没有** AEHD 驱动安装包（`silent_install.bat` 不存在）
+- `gvm.sys`、`aehd.sys` 均不存在；`HvHost` 服务为 `Stopped`
+- 当前用户 `DESKTOP-KAB4T4F\cxk`，`IsAdmin=False`，**无管理员权限**
+- 安装 AEHD 属于安装内核态驱动，必须管理员权限，无法绕过
 
-CPU 支持情况因 WMI 访问被拒（`Get-CimInstance Win32_Processor` → 拒绝访问）而无法读取，
-但驱动缺失这一点已经足够解释 `-accel off` 之外无路可走。
-
-**原因二（关键）：QEMU 后端二进制无法启动。**
-
-```
-> qemu-system-x86_64-headless.exe --version
-→ 退出码 -1073741515 (0xC0000135 = STATUS_DLL_NOT_FOUND)，无 stdout/stderr 输出
-```
-
-对比：模拟器前端本身是正常的。
-
-```
-> emulator.exe -version
-Android emulator version 37.1.11.0 (build_id 15917651) (CL:N/A)
-...（正常输出）
-```
-
-即 **`emulator.exe` 可运行，但它拉起的 `qemu-system-x86_64-headless.exe` 缺少依赖 DLL**，
-一启动就死。这解释了为什么日志里能看到完整的 `androidboot.*` 内核参数打印
-（那是前端已完成镜像与参数组装），但随后没有任何实际引导。
-
-DLL 目录中 `msvcp140.dll`、`vcruntime140.dll`、`concrt140.dll`、`vccorlib140.dll` 等
-VC++ 运行库文件均存在，因此缺失的可能是系统级依赖（如 UCRT/API-set 相关组件）。
+> 前端日志里的 `Ok: Hypervisor compatibility to run avd: BudgetTest are met`
+> 是**误导性的**——它只检查配置，不代表运行时可加速。
 
 ### 4.3 结论
 
-**本机无法运行 Android 模拟器**，这是环境问题，不是应用代码问题。
-该缺口需要以下任一条件才能补齐（均需管理员权限）：
+**本机无法完成模拟器验证**，这是环境限制，不是应用代码问题。已排除的原因与仍需的条件如下：
 
-- 安装 AEHD 驱动：`D:\CodexTasks\android-toolchain\android-sdk\extras\google\Android_Emulator_Hypervisor_Driver\silent_install.bat`
-- 启用 Windows Hypervisor Platform（WHPX）功能
-- 修复 QEMU 后端缺失的依赖 DLL
+| 排查项 | 结论 |
+| --- | --- |
+| QEMU 后端损坏 | ❌ 已排除，修正 PATH 后正常 |
+| QEMU 缺少 DLL | ❌ 已排除（原结论错误） |
+| AVD 配置错误 | ❌ 已排除，`hardware-qemu.ini` 路径与参数均正确 |
+| 客户机镜像损坏 | ❌ 已排除，内核参数正常组装 |
+| **无硬件加速 + 无管理员权限** | ✅ **真实阻塞点** |
+
+补齐该缺口需要管理员权限，选择以下之一：
+
+- 安装 AEHD 驱动（**本机无安装包，需先下载**）
+- 启用 WHPX：`DISM /Online /Enable-Feature /FeatureName:HypervisorPlatform /All`
+- 或改用物理设备（**推荐，无需管理员权限**）
+
+
 
 ---
 

@@ -1,4 +1,4 @@
-# 今日余粮 — 验证证据与缺口
+﻿# 今日余粮 — 验证证据与缺口
 
 本文如实记录当前交付的验证状态。**明确区分「已验证通过」与「未验证」**，
 未验证项一律不记为通过。
@@ -21,7 +21,7 @@
 | **真机安装** | ✅ **通过** | 小米 15 / Android 17，`install -r` Success |
 | **真机启动** | ✅ **通过** | 无崩溃，MainActivity 正常前台 |
 | **真机界面渲染** | ✅ **通过** | 中文界面层级导出核验，无乱码 |
-| **`connectedDebugAndroidTest`** | ✅ **通过（4 项跳过）** | 9 tests / 0 failures / 4 skipped，见 §3 |
+| **`connectedDebugAndroidTest`** | ✅ **通过（4 项跳过）** | 10 tests / 0 failures / 4 skipped，见 §3 |
 | **XLSX 真机解析** | ✅ **通过（修复后）** | 修复前真机失败，见 §4 |
 | 模拟器验证 | ❌ 不可用（环境限制） | 见 §5 |
 | Compose UI 测试 | ⚠️ **API 37 上跳过** | Espresso 上游限制，见 §3.3 |
@@ -87,7 +87,7 @@ Finished 13 tests on 24129PN74C - 17
 BUILD SUCCESSFUL
 ```
 
-结果 XML 汇总：`tests=9 failures=0 errors=0 skipped=4`
+结果 XML 汇总：`tests=10 failures=0 errors=0 skipped=4`
 
 | 用例 | 结果 |
 | --- | --- |
@@ -96,10 +96,22 @@ BUILD SUCCESSFUL
 | `badBackupCannotReplaceLedger` | ✅ PASS |
 | `xlsxParsesOnAndroid` | ✅ PASS |
 | `backupRoundTripOnDevice` | ✅ PASS |
+| `wechatCsvBillParsesOnDevice` | ✅ PASS |
 | `BudgetDeviceTest.recordExpenseUpdatesBothAmounts` | ⚠️ SKIP |
 | `BudgetDeviceTest.concurrentDuplicatePersistsOnce` | ⚠️ SKIP |
 | `BudgetDeviceTest.badBackupCannotReplaceLedger` | ⚠️ SKIP |
 | `BudgetDeviceTest.xlsxParsesOnAndroid` | ⚠️ SKIP |
+
+#### 微信账单 CSV 解析（真机验证）
+
+`wechatCsvBillParsesOnDevice` 使用**贴近真实导出格式**的微信账单样本
+（含说明行、引号内逗号、`¥` 金额符号、转账与退款行），在真机上验证：
+
+- 4 条记录全部解析成功，无整体错误
+- 普通消费 2000 分，类型识别为支出，自动分类为「餐饮」
+- 引号内含逗号的商家名 `便利店, 北门` 被正确视为**单个字段**
+- 金额 `¥8.50` 正确解析为 850 分
+- **转账**与**退款**均被标记为「需确认」（`needsReview = true`），不会自动入账
 
 ### 3.3 为什么有 4 项跳过：Espresso 与 API 37 不兼容
 

@@ -127,4 +127,42 @@ class LedgerDeviceTest {
         assertEquals(s.entries.size, restored.entries.size)
         assertEquals(s.budgets, restored.budgets)
     }
+
+    /**
+     * 真实微信账单格式的 CSV 解析（含说明行、引号内逗号、中文金额符号）。
+     * 这是最接近真实导入路径的设备端验证。
+     */
+    @Test
+    fun wechatCsvBillParsesOnDevice() {
+        val csv = """
+            微信支付账单明细,,,,,,,,
+            微信昵称：[测试],,,,,,,,
+            起始时间：[2026-09-01 00:00:00] 终止时间：[2026-09-30 23:59:59],,,,,,,,
+            导出类型：[全部],,,,,,,,
+            ----------------------微信支付账单明细列表--------------------,,,,,,,,
+            交易时间,交易类型,交易对方,商品,收/支,金额(元),支付方式,当前状态,交易单号,商户单号,备注
+            2026-09-20 12:30:00,商户消费,食堂,午饭,支出,¥20.00,零钱,支付成功,10001,M001,
+            2026-09-21 08:15:00,商户消费,"便利店, 北门",早餐,支出,¥8.50,零钱,支付成功,10002,M002,
+            2026-09-22 19:00:00,转账,张三,还款,支出,¥100.00,零钱,支付成功,10003,M003,
+            2026-09-23 10:00:00,退款,食堂,午饭退款,收入,¥20.00,零钱,已全额退款,10004,M004,
+        """.trimIndent()
+
+        val report = BillParser.parse(csv.toByteArray(Charsets.UTF_8), "bill.csv")
+        assertNull("解析不应报错：" + report.error, report.error)
+        assertEquals(4, report.candidates.size)
+
+        // 普通消费：2000 分，已分类为餐饮
+        val first = report.candidates[0].entry!!
+        assertEquals(2000L, first.amount)
+        assertEquals(Kind.EXPENSE, first.kind)
+
+        // 引号内逗号应被正确当作一个字段
+        assertEquals("便利店, 北门", report.candidates[1].entry!!.merchant)
+        assertEquals(850L, report.candidates[1].entry!!.amount)
+
+        // 转账需人工确认
+        org.junit.Assert.assertTrue(report.candidates[2].needsReview)
+        // 退款需人工确认
+        org.junit.Assert.assertTrue(report.candidates[3].needsReview)
+    }
 }

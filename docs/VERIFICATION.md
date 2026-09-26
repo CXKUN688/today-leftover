@@ -1,11 +1,11 @@
-# 今日余粮 — 验证证据与缺口
+﻿# 今日余粮 — 验证证据与缺口
 
 本文如实记录当前交付的验证状态。**明确区分「已验证通过」与「未验证」**，
 未验证项一律不记为通过。
 
 **验证日期**：2026-09-26
 **交付版本**：0.1.0 (versionCode 1)
-**APK SHA-256**：`aee28af7448a35c3362be6285a3a7e43eaa41d0cf946e05912d8be49902beab6`
+**APK SHA-256**：`df175af72dafc6c0f45821bfd06666418df55d8c52efb55e42dd7b4965353248`
 
 ---
 
@@ -320,8 +320,8 @@ java.lang.SecurityException: Injecting input events requires the caller
 | 项目 | 值 |
 | --- | --- |
 | APK 路径 | `deliverables\今日余粮-debug.apk` |
-| 文件大小 | 59,176,165 字节（约 56.4 MiB） |
-| SHA-256 | `aee28af7448a35c3362be6285a3a7e43eaa41d0cf946e05912d8be49902beab6` |
+| 文件大小 | 59,607,526 字节（约 56.8 MiB） |
+| SHA-256 | `df175af72dafc6c0f45821bfd06666418df55d8c52efb55e42dd7b4965353248` |
 | 包名 | `com.jinyuyuliang.budget` |
 | 版本 | 0.1.0 (versionCode 1) |
 | minSdk / targetSdk | 28 / 36 |

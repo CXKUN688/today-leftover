@@ -102,6 +102,30 @@ powershell -ExecutionPolicy Bypass -File D:\CodexTasks\daily-budget-android-dev\
 > 注意：该脚本含中文输出，文件必须保存为 **UTF-8 with BOM**，
 > 否则 Windows PowerShell 5.1 会按 ANSI 解析导致乱码与语法错误。
 
+## 4.5 应用图标
+
+图标资源位于 `app/src/main/res/`：
+
+| 资源 | 用途 |
+| --- | --- |
+| `mipmap-anydpi-v26/ic_launcher.xml` | 自适应图标（Android 8.0+），引用背景层与前景层 |
+| `mipmap-anydpi-v26/ic_launcher_round.xml` | 圆形自适应图标 |
+| `drawable/ic_launcher_background.xml` | 矢量背景层（品牌绿渐变 `#176957` → `#0E4A3D`） |
+| `mipmap-*/ic_launcher_foreground.png` | 前景层（饭碗图案），五档密度 |
+| `mipmap-*/ic_launcher.png` | 旧版圆角方形图标（API < 26 回退） |
+| `mipmap-*/ic_launcher_round.png` | 旧版圆形图标（API < 26 回退） |
+
+设计说明：
+
+- 图形为**饭碗 + 米堆 + 热气**，呼应「今日余粮」的含义
+- 背景层使用品牌绿渐变，与 `ui/Theme.kt` 的 `Teal #176957` 一致
+- 米堆使用金色渐变，突出「余粮」的视觉重点
+- 前景层图形控制在自适应图标**安全区内**（约 62%～82%），
+  确保在圆形、方形、水滴形等各种启动器遮罩下都不被裁切
+- 同时提供 `<monochrome>`，支持 Android 13+ 主题图标（Material You）
+
+**修改图标后需重新构建并重新生成交付物与校验值**（见 `docs/VERIFICATION.md`）。
+
 ## 5. 构建产物
 
 | 产物 | 路径 |

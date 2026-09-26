@@ -2,8 +2,8 @@
 ========================================
 
 产物文件      : 今日余粮-debug.apk
-文件大小      : 59032017 字节 (约 56.3 MiB)
-SHA-256       : 9728f6ee6ea2911752d6635b695848a3772beb851884dae4a6dd513f863b9c12
+文件大小      : 59176165 字节 (约 56.4 MiB)
+SHA-256       : aee28af7448a35c3362be6285a3a7e43eaa41d0cf946e05912d8be49902beab6
 
 应用信息
 --------
@@ -24,6 +24,21 @@ Android SDK   : D:\CodexTasks\android-toolchain\android-sdk
 Build-Tools   : 35.0.0
 Platform      : android-36
 Android Emulator : 37.1.11.0
+
+真机验证记录
+------------
+验证设备      : Xiaomi 24129PN74C（小米 15，device dada）
+Android 版本  : 17 (API 37)
+HyperOS       : V816 / OS4.0.0.16.XOCCNXM
+CPU ABI       : arm64-v8a
+屏幕          : 1200x2670 @ 520dpi
+
+验证结果：
+  - 安装成功（adb install -r）
+  - 启动正常，无崩溃
+  - 中文界面渲染正确（已通过 uiautomator 层级导出色核对）
+  - 设备测试：9 tests, 0 failures, 4 skipped
+    （4 个 skip 为 Espresso 在 API 37 的上游限制，详见 docs/VERIFICATION.md）
 
 签名说明
 --------

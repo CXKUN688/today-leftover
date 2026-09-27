@@ -1,44 +1,36 @@
-﻿今日余粮 (Daily Budget) — 交付构建信息
+今日余粮 (Daily Budget) — 交付构建信息
 ========================================
 
-产物文件      : 今日余粮-debug.apk
-文件大小      : 59607526 字节 (约 56.8 MiB)
-SHA-256       : df175af72dafc6c0f45821bfd06666418df55d8c52efb55e42dd7b4965353248
+当前版本：0.1.1
+产物文件：今日余粮-0.1.1-debug.apk（见 GitHub Releases 附件）
 
 应用信息
 --------
-应用名称      : 今日余粮
-包名          : com.jinyuyuliang.budget
-版本名        : 0.1.0
-版本号        : 1
-minSdkVersion : 28  (Android 9.0)
-targetSdkVersion : 36 (Android 16)
-compileSdk    : 36
-构建类型      : debug（已签名）
+应用名称         : 今日余粮
+包名             : com.jinyuyuliang.budget
+版本名           : 0.1.1
+版本号           : 2
+minSdkVersion    : 28  (Android 9.0)
+targetSdkVersion : 36  (Android 16)
+compileSdk       : 36
+构建类型         : debug（已签名）
 
-工具链版本
-----------
-JDK           : 17.0.20.1+1 (D:\CodexTasks\android-toolchain\jdk\jdk-17.0.20.1+1)
-Gradle        : 8.13
-Android SDK   : D:\CodexTasks\android-toolchain\android-sdk
-Build-Tools   : 35.0.0
-Platform      : android-36
+工具链版本（验证通过时的组合）
+------------------------------
+JDK              : 17.0.20.1+1
+Gradle           : 8.13
+Android SDK      : platform 36 / build-tools 35.0.0
 Android Emulator : 37.1.11.0
 
 真机验证记录
 ------------
-验证设备      : Xiaomi 小米 15（测试机，序列号已隐去）
-Android 版本  : 17 (API 37)
-HyperOS       : V816 / OS4.0.0.16.XOCCNXM
-CPU ABI       : arm64-v8a
-屏幕          : 1200x2670 @ 520dpi
-
+验证设备         : Xiaomi 小米 15（Android 17 / API 37）
 验证结果：
-  - 安装成功（adb install -r）
-  - 启动正常，无崩溃
-  - 中文界面渲染正确（已通过 uiautomator 层级导出色核对）
-  - 设备测试：9 tests, 0 failures, 4 skipped
-    （4 个 skip 为 Espresso 在 API 37 的上游限制，详见 docs/VERIFICATION.md）
+  - 安装成功，启动无崩溃
+  - 中文界面渲染正确
+  - 设备测试 10 项：0 失败，4 项因 Espresso 上游限制跳过
+
+详见 docs/VERIFICATION.md。
 
 签名说明
 --------
@@ -49,11 +41,13 @@ CPU ABI       : arm64-v8a
 
 校验方法
 --------
+每个 Release 附带的 SHA256SUMS 文件记录了对应 APK 的校验值。
+
 Windows PowerShell:
-  Get-FileHash .\今日余粮-debug.apk -Algorithm SHA256
+  Get-FileHash .\今日余粮-0.1.1-debug.apk -Algorithm SHA256
 
 Linux / macOS:
-  sha256sum 今日余粮-debug.apk
+  sha256sum 今日余粮-0.1.1-debug.apk
 
 安装方法
 --------
@@ -61,6 +55,6 @@ Linux / macOS:
 2. 在「开发者选项」中开启「USB 调试」。
 3. 用数据线连接电脑，在手机上确认「允许 USB 调试」。
 4. 执行：
-   D:\CodexTasks\android-toolchain\android-sdk\platform-tools\adb.exe install -r 今日余粮-debug.apk
+   <工具链目录>\android-sdk\platform-tools\adb.exe install -r 今日余粮-0.1.1-debug.apk
 
-也可直接将 APK 文件传输到手机后点击安装（需允许「安装未知来源应用」）。
+也可直接将 APK 传输到手机后点击安装（需允许「安装未知来源应用」）。

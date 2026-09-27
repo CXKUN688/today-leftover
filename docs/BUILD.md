@@ -4,35 +4,50 @@
 
 ## 1. 项目位置
 
+克隆仓库后，所有路径均相对于仓库根目录：
+
 | 项目 | 路径 |
 | --- | --- |
-| 工作树（源码） | `D:\CodexTasks\daily-budget-android-dev` |
-| 主仓库（git 目录） | `D:\CodexTasks\daily-budget-android` |
-| 工具链根目录 | `D:\CodexTasks\android-toolchain` |
-| 交付物 | `D:\CodexTasks\daily-budget-android-dev\deliverables` |
+| 源码 | 仓库根目录 |
+| 交付物 | `deliverables/` |
+| 构建脚本 | `scripts/build.ps1`、`scripts/verify-device.ps1` |
 
-> `daily-budget-android-dev` 是 `daily-budget-android` 仓库的一个 git worktree，
-> 其 `.git` 是指向 `D:\CodexTasks\daily-budget-android\.git\worktrees\daily-budget-android-dev` 的指针文件。
+工具链（JDK / Android SDK / Gradle 缓存）**不随仓库分发**，需自行准备。
+下文用 `<工具链目录>` 指代该目录，它应包含：
+
+```
+<工具链目录>/
+├── jdk/              JDK 17
+├── android-sdk/      Android SDK（platform 36、build-tools 35.0.0、platform-tools）
+└── gradle-cache/     Gradle 用户目录（可留空，首次构建会自动下载）
+```
+
+`scripts/build.ps1` 会按以下顺序自动探测 `<工具链目录>`：
+
+1. 命令行参数 `-ToolRoot <目录>`
+2. 环境变量 `$env:DSH_TOOL_ROOT`
+3. 由 `$env:ANDROID_HOME` / `$env:ANDROID_SDK_ROOT` 推断其父目录
+4. 仓库的上一级或同级目录下的 `android-toolchain`
+
+探测失败会明确报错，不会静默使用错误工具链。
 
 ## 2. 工具链位置与版本
 
-所有工具都安装在 D 盘，不依赖系统环境变量，也不覆盖任何既有工具。
+以下版本为验证通过时的组合，供复现参考：
 
 | 组件 | 版本 | 路径 |
 | --- | --- | --- |
-| JDK | 17.0.20.1+1 | `D:\CodexTasks\android-toolchain\jdk\jdk-17.0.20.1+1` |
-| Gradle | 8.13（wrapper 自动下载） | `D:\CodexTasks\android-toolchain\gradle-cache\wrapper` |
-| Gradle 用户目录 | 项目专用 | `D:\CodexTasks\android-toolchain\gradle-cache` |
-| Android SDK | platform 36 / build-tools 35.0.0 | `D:\CodexTasks\android-toolchain\android-sdk` |
-| platform-tools (adb) | — | `D:\CodexTasks\android-toolchain\android-sdk\platform-tools` |
-| Android Emulator | 37.1.11.0 | `D:\CodexTasks\android-toolchain\android-sdk\emulator` |
-| AVD | BudgetTest (android-35, x86_64) | `D:\CodexTasks\android-toolchain\avd\BudgetTest.avd` |
-| AVD 用户目录 | — | `D:\CodexTasks\android-toolchain\android-user` |
+| JDK | 17.0.20.1+1 | `<工具链目录>\jdk\jdk-17.0.20.1+1` |
+| Gradle | 8.13（wrapper 自动下载） | `<工具链目录>\gradle-cache\wrapper` |
+| Gradle 用户目录 | 项目专用 | `<工具链目录>\gradle-cache` |
+| Android SDK | platform 36 / build-tools 35.0.0 | `<工具链目录>\android-sdk` |
+| platform-tools (adb) | — | `<工具链目录>\android-sdk\platform-tools` |
+| Android Emulator | 37.1.11.0 | `<工具链目录>\android-sdk\emulator` |
 
 SDK 路径通过 `local.properties` 固定：
 
 ```
-sdk.dir=D:/CodexTasks/android-toolchain/android-sdk
+sdk.dir=<工具链目录>/android-sdk
 ```
 
 ## 3. 依赖版本（`app/build.gradle.kts`）
@@ -51,7 +66,7 @@ sdk.dir=D:/CodexTasks/android-toolchain/android-sdk
 ### 4.1 使用构建脚本（推荐）
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File D:\CodexTasks\daily-budget-android-dev\scripts\build.ps1
+powershell -ExecutionPolicy Bypass -File scripts\build.ps1
 ```
 
 脚本会自动设置 `JAVA_HOME`、`GRADLE_USER_HOME`、`ANDROID_HOME`，
@@ -64,16 +79,16 @@ powershell -ExecutionPolicy Bypass -File D:\CodexTasks\daily-budget-android-dev\
 加上 `-DeviceTests` 会追加 `:app:connectedDebugAndroidTest`（需要已连接的设备）：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File D:\CodexTasks\daily-budget-android-dev\scripts\build.ps1 -DeviceTests
+powershell -ExecutionPolicy Bypass -File scripts\build.ps1 -DeviceTests
 ```
 
 ### 4.2 手动执行
 
 ```powershell
-$env:JAVA_HOME='D:\CodexTasks\android-toolchain\jdk\jdk-17.0.20.1+1'
-$env:GRADLE_USER_HOME='D:\CodexTasks\android-toolchain\gradle-cache'
-$env:ANDROID_HOME='D:\CodexTasks\android-toolchain\android-sdk'
-cd D:\CodexTasks\daily-budget-android-dev
+$env:JAVA_HOME='<工具链目录>\jdk\jdk-17.0.20.1+1'
+$env:GRADLE_USER_HOME='<工具链目录>\gradle-cache'
+$env:ANDROID_HOME='<工具链目录>\android-sdk'
+cd .
 .\gradlew.bat :core:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest
 ```
 
@@ -92,7 +107,7 @@ cd D:\CodexTasks\daily-budget-android-dev
 并把证据写入 `evidence\` 目录：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File D:\CodexTasks\daily-budget-android-dev\scripts\verify-device.ps1
+powershell -ExecutionPolicy Bypass -File scripts\verify-device.ps1
 ```
 
 可选参数：`-SkipTests`（跳过设备测试）、`-SkipInstall`（跳过安装）。
@@ -158,13 +173,13 @@ QEMU 后端二进制依赖模拟器目录存在于 PATH，否则会**静默秒�
 正确的启动方式：
 
 ```powershell
-$emu='D:\CodexTasks\android-toolchain\android-sdk\emulator'
+$emu='<工具链目录>\android-sdk\emulator'
 $env:PATH="$emu;$emu\lib64;$emu\qemu\windows-x86_64;$env:PATH"
-$env:ANDROID_AVD_HOME='D:\CodexTasks\android-toolchain\avd'
-$env:ANDROID_USER_HOME='D:\CodexTasks\android-toolchain\android-user'
-$env:ANDROID_SDK_ROOT='D:\CodexTasks\android-toolchain\android-sdk'
-$env:HOME='D:\CodexTasks\android-toolchain\android-user'
-$env:USERPROFILE='D:\CodexTasks\android-toolchain\android-user'
+$env:ANDROID_AVD_HOME='<工具链目录>\avd'
+$env:ANDROID_USER_HOME='<工具链目录>\android-user'
+$env:ANDROID_SDK_ROOT='<工具链目录>\android-sdk'
+$env:HOME='<工具链目录>\android-user'
+$env:USERPROFILE='<工具链目录>\android-user'
 
 & "$emu\emulator.exe" -avd BudgetTest -no-window -no-audio -no-boot-anim `
     -no-snapshot -gpu swiftshader -accel off -memory 2048 -cores 2
@@ -202,7 +217,7 @@ WARNING | x86_64 emulation may not work without hardware acceleration!
 
 ```powershell
 # 1. 确认设备已授权
-D:\CodexTasks\android-toolchain\android-sdk\platform-tools\adb.exe devices -l
+<工具链目录>\android-sdk\platform-tools\adb.exe devices -l
 
 # 2. 一键验证（推荐）
 powershell -ExecutionPolicy Bypass -File scripts\verify-device.ps1
@@ -225,15 +240,15 @@ powershell -ExecutionPolicy Bypass -File scripts\verify-device.ps1
 如需指向 D 盘用户目录，设置：
 
 ```powershell
-$env:ANDROID_USER_HOME='D:\CodexTasks\android-toolchain\android-user'
-$env:ANDROID_AVD_HOME='D:\CodexTasks\android-toolchain\avd'
+$env:ANDROID_USER_HOME='<工具链目录>\android-user'
+$env:ANDROID_AVD_HOME='<工具链目录>\avd'
 ```
 
 ## 8. 不纳入版本控制的内容
 
 以下内容已被 `.gitignore` 排除，不应提交：
 
-- Gradle 缓存与 wrapper 下载（`D:\CodexTasks\android-toolchain\gradle-cache`）
+- Gradle 缓存与 wrapper 下载（`<工具链目录>\gradle-cache`）
 - Android SDK 与系统镜像
 - 调试签名密钥（`~/.android/debug.keystore`）
 - 构建输出（`build/`、`.gradle/`、`.kotlin/`）

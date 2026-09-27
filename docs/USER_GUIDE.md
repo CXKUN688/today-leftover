@@ -8,7 +8,7 @@
 ### 方式一：ADB 安装（推荐）
 
 ```powershell
-D:\CodexTasks\android-toolchain\android-sdk\platform-tools\adb.exe install -r "D:\CodexTasks\daily-budget-android-dev\deliverables\今日余粮-debug.apk"
+<工具链目录>\android-sdk\platform-tools\adb.exe install -r "deliverables\今日余粮-debug.apk"
 ```
 
 ### 方式二：手机直接安装

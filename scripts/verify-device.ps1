@@ -13,16 +13,36 @@
 #   logcat-app.txt         应用相关日志
 
 param(
+    [string]$ToolRoot = $env:DSH_TOOL_ROOT,
     [switch]$SkipTests,
     [switch]$SkipInstall
 )
 
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
-$toolRoot    = 'D:\CodexTasks\android-toolchain'
-$adb         = Join-Path $toolRoot 'android-sdk\platform-tools\adb.exe'
 $evidence    = Join-Path $projectRoot 'evidence'
-$apk         = Join-Path $projectRoot 'deliverables\今日余粮-debug.apk'
+
+# 依次探测工具链目录：显式参数 > 环境变量 > 由 ANDROID_HOME 推断 > 项目同级
+function Resolve-ToolRoot {
+    if ($ToolRoot -and (Test-Path $ToolRoot)) { return $ToolRoot }
+    $candidates = @()
+    if ($env:ANDROID_HOME) { $candidates += (Split-Path $env:ANDROID_HOME -Parent) }
+    if ($env:ANDROID_SDK_ROOT) { $candidates += (Split-Path $env:ANDROID_SDK_ROOT -Parent) }
+    $candidates += (Join-Path (Split-Path $projectRoot -Parent) 'android-toolchain')
+    $candidates += (Join-Path $projectRoot 'android-toolchain')
+    foreach ($c in $candidates) {
+        if ($c -and (Test-Path (Join-Path $c 'android-sdk'))) { return $c }
+    }
+    return $null
+}
+
+$toolRoot = Resolve-ToolRoot
+if (-not $toolRoot) { throw "找不到 Android 工具链目录。请用 -ToolRoot 指定，或设置 `$env:DSH_TOOL_ROOT。" }
+$adb = Join-Path $toolRoot 'android-sdk\platform-tools\adb.exe'
+
+# 自动选取最近构建的交付 APK（按修改时间），避免硬编码版本号
+$apk = Get-ChildItem -Path (Join-Path $projectRoot 'deliverables') -Filter '*.apk' -ErrorAction SilentlyContinue |
+    Sort-Object LastWriteTime -Descending | Select-Object -First 1 -ExpandProperty FullName
 
 New-Item -ItemType Directory -Force -Path $evidence | Out-Null
 New-Item -ItemType Directory -Force -Path (Join-Path $evidence 'screenshots') | Out-Null
@@ -34,14 +54,19 @@ function Fail($text) { Write-Host "失败：$text" -ForegroundColor Red; exit 1 
 Section '环境检查'
 
 if (-not $env:JAVA_HOME) {
-    $env:JAVA_HOME = (Get-ChildItem -LiteralPath (Join-Path $toolRoot 'jdk') -Directory | Select-Object -First 1).FullName
+    $jdk = Get-ChildItem -LiteralPath (Join-Path $toolRoot 'jdk') -Directory -ErrorAction SilentlyContinue |
+        Select-Object -First 1
+    if (-not $jdk) { Fail "在 $toolRoot\jdk 下找不到 JDK" }
+    $env:JAVA_HOME = $jdk.FullName
 }
 $env:GRADLE_USER_HOME = Join-Path $toolRoot 'gradle-cache'
 $env:ANDROID_HOME     = Join-Path $toolRoot 'android-sdk'
 $env:ANDROID_SDK_ROOT = $env:ANDROID_HOME
 
 if (-not (Test-Path $adb)) { Fail "找不到 adb：$adb" }
-if (-not (Test-Path $apk)) { Fail "找不到 APK：$apk（请先运行 scripts\build.ps1）" }
+if (-not $apk) { Fail "在 deliverables\ 下找不到任何 APK（请先运行 scripts\build.ps1）" }
+Write-Host "工具链目录：$toolRoot"
+Write-Host "待安装 APK：$apk"
 
 & $adb start-server | Out-Null
 $devices = & $adb devices | Select-String -Pattern '^\S+\s+(device|offline|unauthorized)$'

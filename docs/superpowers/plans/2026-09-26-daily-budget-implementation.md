@@ -8,11 +8,11 @@
 
 **Tech Stack:** Kotlin、Jetpack Compose、Room、Gradle Kotlin DSL、JUnit、Android 仪器化测试。具体构建版本在 Task 1 根据官方兼容矩阵锁定并写入版本目录。
 
-**Spec:** D:\CodexTasks\daily-budget-android\docs\superpowers\specs\2026-09-26-daily-budget-design.md（包含 3.1 当日预警与动态重算）
+**Spec:** docs\superpowers\specs\2026-09-26-daily-budget-design.md（包含 3.1 当日预警与动态重算）
 
 ## Global Constraints
 
-- 项目目录：D:\CodexTasks\daily-budget-android。任务文件、工具下载与交付均在 D:\CodexTasks 下，应用强制运行时状态除外。
+- 项目目录：<主仓库>。任务文件、工具下载与交付均在 <工作目录> 下，应用强制运行时状态除外。
 - 用户设备为小米 15、自报安卓 17；安装及真实通知兼容必须有设备验证证据。
 - 第一版为个人本地账本，无需注册。界面为中文、人民币、浅色卡片、大号金额、底部导航。
 - 金额统一以整数分保存，所有输入与加减乘除必须检测溢出；剩余天数含今天。

@@ -234,10 +234,10 @@ powershell -ExecutionPolicy Bypass -File scripts\verify-device.ps1
   Get-PnpDevice -PresentOnly | Where-Object { $_.InstanceId -like '*VID_2717*' }
   ```
 
-### 7.3 adb 需要正确的用户目录
+### 7.3 adb / 模拟器需要正确的用户目录
 
-模拟器/adb 默认写入 `C:\Users\<用户>\.android`。
-如需指向 D 盘用户目录，设置：
+模拟器与 adb 默认写入用户主目录下的 `.android`。
+若希望把 AVD 与缓存放在工具链目录内（便于隔离和清理），设置：
 
 ```powershell
 $env:ANDROID_USER_HOME='<工具链目录>\android-user'

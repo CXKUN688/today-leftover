@@ -6,3 +6,6 @@ local.properties
 *.keystore
 scripts/*.py
 evidence/
+
+# APK 通过 GitHub Releases 发布，不入库
+deliverables/*.apk

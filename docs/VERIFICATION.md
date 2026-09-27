@@ -396,4 +396,4 @@ java.lang.SecurityException: Injecting input events requires the caller
 - 只运行此专项测试，没有运行会初始化账本的其他真机测试。通过 adb install -r 覆盖更新成功，没有卸载或清空应用。
 - 安装前数据库已私有备份。更新后原有 4 笔收支均未删除或修改，另有 1 笔新增；预算、预留、分类、规则未改变。备份未加入版本控制。
 - 真实微信付款捕获**经实测确认不可用**（见 §7）；监听服务能连上，但收不到可识别的付款通知。系统强行杀进程后代码无法保证自行恢复，需要结合后台自启动/省电设置。**通知缺失时无法凭空记账。**
-- 新 APK：`deliverables/今日余粮-0.1.1-debug.apk`；SHA-256：`9363b113b109b295d26729ea187eb8aca23b8aecd1af766a07464a9ee3275d84`。旧版交付包保留。
+- 新 APK：`deliverables/今日余粮-0.1.2-debug.apk`；SHA-256：`（见 Release 附件 SHA256SUMS）`。旧版交付包保留。

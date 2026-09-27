@@ -64,7 +64,7 @@
 或用命令行安装：
 
 ```bash
-adb install -r today-leftover-0.1.1-debug.apk
+adb install -r today-leftover-0.1.2-debug.apk
 ```
 
 也可直接把 APK 传到手机上点击安装（需允许「安装未知来源应用」）。
@@ -74,7 +74,7 @@ adb install -r today-leftover-0.1.1-debug.apk
 下载后建议核对校验值（每个 Release 都附带 `SHA256SUMS-<版本>.txt`）：
 
 ```powershell
-Get-FileHash .\today-leftover-0.1.1-debug.apk -Algorithm SHA256
+Get-FileHash .\today-leftover-0.1.2-debug.apk -Algorithm SHA256
 ```
 
 > ⚠️ Release 中的 APK 使用调试密钥签名，**仅供个人试用**，不是应用商店发布包。

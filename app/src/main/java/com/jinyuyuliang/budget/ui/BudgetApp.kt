@@ -103,7 +103,7 @@ fun kindName(k:Kind)=when(k){Kind.EXPENSE->"支出";Kind.REFUND->"退款";Kind.I
  item{Panel{Text("预留资金",fontWeight=FontWeight.Bold);Caption("房租、话费或储蓄先留出来。付款时关联预留项，不重复扣预算。");s.reserves.filter{it.month==today.take(7)}.forEach{r->Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f).clickable{onReserve(r)}){Text(r.name+" · ¥ "+Money.format(r.amount));Caption("未使用 ¥ "+Money.format(BudgetCalculator.reserveRemaining(s,r,today)))};IconButton(onClick={delete=r.id}){Icon(Icons.Outlined.DeleteOutline,"删除预留")}}};OutlinedButton(onClick={onReserve(Reserve(UUID.randomUUID().toString(),today.take(7),"",0))}){Text("添加预留")}}}
  item{Panel{Text("分类与商户规则",fontWeight=FontWeight.Bold);Caption(s.categories.joinToString(" · "));OutlinedButton(onClick=onCategories){Text("管理分类和规则")}}}
  item{Panel{Text("本地备份",fontWeight=FontWeight.Bold);Caption("无需账号，离线保存。卸载会删除账本；请定期导出备份。备份文件含财务数据，请妥善保管。");Row(horizontalArrangement=Arrangement.spacedBy(12.dp)){Button(onClick=onExport){Text("导出备份")};OutlinedButton(onClick=onRestore){Text("恢复备份")}}}}
- item{Caption("今日余粮 0.1.1 · 个人试用版\n付款通知自动识别实测不可用，记账请以手动录入和账单导入为准。")}
+ item{Caption("今日余粮 0.1.2 · 个人试用版\n付款通知自动识别实测不可用，记账请以手动录入和账单导入为准。")}
  }
  delete?.let{id->AlertDialog(onDismissRequest={delete=null},title={Text("删除预留项？")},text={Text("有关联消费时，请先编辑消费解除关联。")},confirmButton={TextButton(onClick={onDeleteReserve(id);delete=null}){Text("删除")}},dismissButton={TextButton(onClick={delete=null}){Text("取消")}})}
 }

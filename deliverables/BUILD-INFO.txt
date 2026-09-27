@@ -1,4 +1,4 @@
-今日余粮 (Daily Budget) — 交付构建信息
+﻿今日余粮 (Daily Budget) — 交付构建信息
 ========================================
 
 产物文件      : 今日余粮-debug.apk
@@ -27,7 +27,7 @@ Android Emulator : 37.1.11.0
 
 真机验证记录
 ------------
-验证设备      : Xiaomi 24129PN74C（小米 15，device dada）
+验证设备      : Xiaomi 小米 15（测试机，序列号已隐去）
 Android 版本  : 17 (API 37)
 HyperOS       : V816 / OS4.0.0.16.XOCCNXM
 CPU ABI       : arm64-v8a

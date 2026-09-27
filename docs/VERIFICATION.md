@@ -69,12 +69,12 @@
 
 | 项目 | 值 |
 | --- | --- |
-| 型号 | Xiaomi 24129PN74C（小米 15，device `dada`） |
+| 型号 | Xiaomi 小米 15（测试机，序列号已隐去） |
 | Android 版本 | **17（API 37）** |
 | HyperOS | V816 / OS4.0.0.16.XOCCNXM |
 | CPU ABI | arm64-v8a |
 | 屏幕 | 1200x2670 @ 520dpi |
-| 序列号 | bf4e7dbf |
+| 序列号 | 已隐去（见说明） |
 
 > 注意：`targetSdk=36` 而设备为 **API 37**，属于向前兼容场景，实测通过。
 
@@ -82,8 +82,8 @@
 
 ```
 > .\gradlew.bat :app:connectedDebugAndroidTest
-Starting 10 tests on 24129PN74C - 17
-Finished 14 tests on 24129PN74C - 17
+Starting 10 tests on <测试设备> - 17
+Finished 14 tests on <测试设备> - 17
 BUILD SUCCESSFUL
 ```
 
@@ -282,7 +282,7 @@ java.lang.SecurityException: Injecting input events requires the caller
 
 > 说明：这不是 MIUI 的安全限制，也不是设备上第三方无障碍服务所致，
 > 而是系统级的权限约束，**无法在当前环境下绕过**。
-> （此前曾推测与 MIUI 或设备上的 `com.lptiyu.tanke` 服务有关，实测不成立，特此更正。）
+> （此前曾推测与 MIUI 或设备上的 一个第三方无障碍服务有关，实测不成立，特此更正。）
 
 **因此以下流程仍未经手动确认**，需要你在手机上实际操作：
 
@@ -336,3 +336,16 @@ java.lang.SecurityException: Injecting input events requires the caller
 **构建、纯逻辑测试、真机安装启动、真机设备测试均已通过；
 真机验证还发现并修复了一个使 XLSX 导入在 Android 上完全不可用的真实缺陷。
 剩余未验证项为：Compose UI 自动化（Espresso 上游不支持 API 37）、手动点击流程、真实通知记账与真实账单导入。**
+
+
+## 10. 2026-09-27 通知监听恢复修复（0.1.1 / versionCode 2）
+
+- 手机系统保留通知使用权，但 Live notification listeners 中服务已消失。退出记录显示系统 umms_selfcheck 杀进程；重新授权短暂恢复后再次断开。
+- 增加应用恢复前台时 requestRebind、服务断开后的延迟重连、真实连接状态和手动重连按钮；连接后重新解析仍在通知栏的白名单通知。
+- 诊断仅保存接收时间、来源和识别结果，不保存原始通知正文。不能恢复已消失的通知或读取支付历史账单。
+- `:core:test :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug` 全部成功。
+- 专项 ListenerRecoveryDeviceTest 在原版上复现失败。初版测试使用 ActivityScenario 在 API 37 等待界面空闲时卡住；改成后台 context.startActivity 后被启动限制阻止；最终使用 uiAutomation 的 shell am start，明确验证断开后启动应用恢复绑定，结果 OK (1 test)，1.258 秒。
+- 只运行此专项测试，没有运行会初始化账本的其他真机测试。通过 adb install -r 覆盖更新成功，没有卸载或清空应用。
+- 安装前数据库已私有备份。更新后原有 4 笔收支均未删除或修改，另有 1 笔新增；预算、预留、分类、规则未改变。备份未加入版本控制。
+- 真实微信付款捕获仍待验证；系统强行杀进程后代码无法保证自行恢复，需要结合后台自启动/省电设置。通知缺失时仍无法凭空记账。
+- 新 APK：`deliverables/今日余粮-0.1.1-debug.apk`；SHA-256：`9363b113b109b295d26729ea187eb8aca23b8aecd1af766a07464a9ee3275d84`。旧版交付包保留。

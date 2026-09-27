@@ -50,17 +50,28 @@
 
 详见 [`docs/BUILD.md`](docs/BUILD.md)。
 
-## 安装
+## 下载安装
 
-从 [Releases](../../releases) 下载 APK，或：
+前往 **[Releases](https://github.com/CXKUN688/today-leftover/releases)** 页，
+在最新版本下方找到 `Assets`，下载 `today-leftover-<版本>-debug.apk`。
+
+或用命令行安装：
 
 ```bash
-adb install -r 今日余粮-<版本>-debug.apk
+adb install -r today-leftover-0.1.1-debug.apk
 ```
+
+也可直接把 APK 传到手机上点击安装（需允许「安装未知来源应用」）。
 
 系统要求：**Android 9.0（API 28）及以上**。
 
-> Release 中的 APK 使用调试密钥签名，**仅供个人试用**，不是应用商店发布包。
+下载后建议核对校验值（每个 Release 都附带 `SHA256SUMS-<版本>.txt`）：
+
+```powershell
+Get-FileHash .\today-leftover-0.1.1-debug.apk -Algorithm SHA256
+```
+
+> ⚠️ Release 中的 APK 使用调试密钥签名，**仅供个人试用**，不是应用商店发布包。
 
 ## 项目结构
 

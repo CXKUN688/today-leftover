@@ -9,3 +9,6 @@ evidence/
 
 # APK 通过 GitHub Releases 发布，不入库
 deliverables/*.apk
+
+# 发布说明由 gh release 管理
+deliverables/RELEASE-NOTES-*.md
